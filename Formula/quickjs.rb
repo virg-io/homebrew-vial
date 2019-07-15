@@ -1,32 +1,38 @@
 class Quickjs < Formula
-  desc "QuickJS Javascript Engine"
+  desc "Small And Fast Javascript Engine"
   homepage "https://bellard.org/quickjs/"
 
   url "https://bellard.org/quickjs/quickjs-2019-07-09.tar.xz"
   sha256 "350c1cd9dd318ad75e15c9991121c80b85c2ef873716a8900f811554017cd564"
 
-  patch do
-    url "../Patches/quickjs/build-dynamic-modules.diff"
-    sha256 "3ea7d2641fe4ee3db3dd9c8081266e0269ee21c0fd9f87f798b40891cc61778c"
+  bottle do
+    root_url "https://github.com/pinkeen/homebrew-vial/archive/"
+    sha256 "740260e7b837700a038c909337720ba0a3f516d9784159265d1b6a3e282c9e1d" => :mojave
   end
 
+  patch :DATA
+
   def install
+    system "make", "clean"
     system "make", "prefix=#{prefix}", "CONFIG_M32="
-    system "make", "test", "prefix=#{prefix}", "CONFIG_M32="
+    # Tests are dependent on having a TTY, so fake it with `script`
+    system "script", "--", "/dev/null", "make", "test", "prefix=#{prefix}", "CONFIG_M32="
     system "make", "install", "prefix=#{prefix}", "CONFIG_M32="
 
     mkdir_p pkgshare
     cp_r "examples", pkgshare
+    cp_r "doc", pkgshare
   end
 
   test do
-    system "false"
+    assert_match /^QuickJS version #{version}/, shell_output("#{bin}/qjs --help")
+    assert_match /^QJS42/, shell_output("#{bin}/qjs --eval 'const js=\"JS\"; console.log(`Q${js}${(7 + 35)}`);'")
   end
 end
 
-
 __END__
 diff --git a/Makefile b/Makefile.patched
+index 7ca93f0..dde78ff 100644
 --- a/Makefile
 +++ b/Makefile.patched
 @@ -120,2 +120,8 @@ endif
@@ -46,14 +52,15 @@ diff --git a/Makefile b/Makefile.patched
 -
 -test: qjs qjsbn
 +test: qjs qjsbn bjson.so
-  ./qjs tests/test_closure.js
+ 	./qjs tests/test_closure.js
 @@ -380,5 +382,3 @@ test: qjs qjsbn
-  ./qjs -m tests/test_std.js
+ 	./qjs -m tests/test_std.js
 -ifndef CONFIG_DARWIN
-  ./qjs -m tests/test_bjson.js
+ 	./qjs -m tests/test_bjson.js
 -endif
-  ./qjsbn tests/test_closure.js
+ 	./qjsbn tests/test_closure.js
 @@ -460,3 +460,3 @@ bench-v8: qjs qjs32
  bjson.so: $(OBJDIR)/bjson.pic.o
-- $(CC) $(LDFLAGS) -shared -o $@ $^ $(LIBS)
-+ $(CC) $(LDFLAGS_DYNLOAD) -shared -o $@ $^ $(LIBS)
+-	$(CC) $(LDFLAGS) -shared -o $@ $^ $(LIBS)
++	$(CC) $(LDFLAGS_DYNLOAD) -shared -o $@ $^ $(LIBS)
+ 

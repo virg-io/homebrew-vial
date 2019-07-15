@@ -1,0 +1,95 @@
+#!/bin/bash
+
+set -e
+
+TAP_BUILD_DIR="$PWD"
+TAP_BOTTLE_DIR="$TAP_BUILD_DIR/Bottle"
+TAP_FORMULA_DIR="$TAP_BUILD_DIR/Formula"
+
+TAP_NAME="pinkeen/vial"
+TAP_NAME_GH="pinkeen/homebrew-vial"
+TAP_PATH_GH="github.com/${TAP_NAME_GH}"
+TAP_URL="https://${TAP_PATH}"
+TAP_BOTTLE_ROOT_URL="https://github.com/${TAP_GITHUB_NAME}/archive"
+
+function buttler_util_get_tap_path() { brew tap-info "$1" --json | jq '.[0].path' -r; }
+function buttler_util_get_formula_name() { brew info "$1" --json | jq '.[0].name' -r; }
+function buttler_util_get_tap_formulas() { rew tap-info pinkeen/vial --json | jq '.[0].formula_names | .[]' -r; }
+
+function buttler_tap() {
+	local TAP="$1" URL="$2"
+
+ 	brew tap "$TAP" "$URL"
+
+ 	if [[ ! "$URL" = "http"* ]] ; then 
+ 		TAP_PATH="$(buttler_util_get_tap_path "$TAP")"
+
+ 		rm -rf "$TAP_PATH"
+ 		ln -sTLvf "$TAP_BUILD_DIR" "$TAP_PATH"
+	fi
+}
+
+function buttler_info() {
+	echo -e "--- Homebrew Config --- \n"
+	brew config
+	echo -e "\n--- Installed Homebrew Packages --- \n"
+	brew list -1l --full-name --versions
+	echo -e "\n--- Current Env --- \n"
+	env
+	echo -e "\n\n"
+}
+
+function buttler_audit() {
+	brew audit --verbose --strict "$FORMULA"
+}
+
+function buttler_install() {
+	local FORMULA="$1"
+
+	if brew list "$FORMULA" ; then
+		brew uninstall "$FORMULA"
+	fi
+
+	brew install "$FORMULA" --verbose --build-bottle --force
+}
+
+function buttler_bottle() {
+	local FORMULA="$1"
+
+	mkdir -p "$TAP_BOTTLE_DIR"
+
+	(cd "$TAP_BOTTLE_DIR"; brew bottle "$FORMULA" --json --verbose --force-core-tap "--root-url=$TAP_BOTTLE_ROOT_URL")
+}
+
+function buttler_write() {
+	local FORMULA="$1"
+
+	set -e -x
+	ls -1f "$TAP_BOTTLE_DIR"*".json" | xargs brew bottle --write --no-commit --merge
+}
+
+function buttler_build-formula() {
+	buttler_audit "$FORMULA"
+	buttler_install "$FORMULA"
+	buttler_bottle "$FORMULA"
+	buttler_write "$FORMULA"
+}
+
+function buttler_build-tap() {
+	buttler_tap "$TAP_NAME" "$TAP_BUILD_DIR"
+}
+
+CMD="$1"
+CMD_FUNC="buttler_$CMD"
+
+if [[ $# -lt 1 ]] ; then
+    echo "Usage: $0 <command> [args]" >&2
+    exit 2
+fi
+
+if ! (type "$CMD_FUNC" 2>&1 > /dev/null) ; then
+    echo "Unknown command $CMD!" >&2
+    exit 1
+fi
+
+shift; "$CMD_FUNC" "$@"

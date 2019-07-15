@@ -1,0 +1,16 @@
+os: osx
+osx_image: xcode11
+
+addons:
+  homebrew:
+    update: true
+    packages:
+      - bash
+      - coreutils
+      - findutils
+      - jq
+
+script: ./build_bottles.sh
+
+deploy:
+  skip_cleanup: true
