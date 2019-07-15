@@ -10,7 +10,7 @@ addons:
       - findutils
       - jq
 
-script: ./build_bottles.sh
+script: ./buttler build-tap
 
 deploy:
   skip_cleanup: true

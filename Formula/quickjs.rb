@@ -6,8 +6,8 @@ class Quickjs < Formula
   sha256 "350c1cd9dd318ad75e15c9991121c80b85c2ef873716a8900f811554017cd564"
 
   bottle do
-    root_url "https://github.com/pinkeen/homebrew-vial/archive/"
-    sha256 "740260e7b837700a038c909337720ba0a3f516d9784159265d1b6a3e282c9e1d" => :mojave
+    rebuild 1
+    sha256 "2e75852c8866f5ad64189c6bc5747140c0257990ffe8d05545a516d2283b6329" => :mojave
   end
 
   patch :DATA
@@ -25,7 +25,6 @@ class Quickjs < Formula
   end
 
   test do
-    assert_match /^QuickJS version #{version}/, shell_output("#{bin}/qjs --help")
     assert_match /^QJS42/, shell_output("#{bin}/qjs --eval 'const js=\"JS\"; console.log(`Q${js}${(7 + 35)}`);'")
   end
 end

@@ -12,9 +12,10 @@ TAP_PATH_GH="github.com/${TAP_NAME_GH}"
 TAP_URL="https://${TAP_PATH}"
 TAP_BOTTLE_ROOT_URL="https://github.com/${TAP_GITHUB_NAME}/archive"
 
-function buttler_util_get_tap_path() { brew tap-info "$1" --json | jq '.[0].path' -r; }
-function buttler_util_get_formula_name() { brew info "$1" --json | jq '.[0].name' -r; }
-function buttler_util_get_tap_formulas() { rew tap-info pinkeen/vial --json | jq '.[0].formula_names | .[]' -r; }
+function buttler_tap-get-path() 		{ brew tap-info "$1" --json | jq '.[0].path' -r; }
+function buttler_tap-list-formulas() 	{ brew tap-info pinkeen/vial --json | jq '.[0].formula_names | .[]' -r; }
+function buttler_formula-get-name() 	{ brew info "$1" --json | jq '.[0].name' -r; }
+function buttler_formula-get-version()  { brew info "$1" --json | jq '.[0].installed[0].version' -r ; }
 
 function buttler_tap() {
 	local TAP="$1" URL="$2"
@@ -22,7 +23,7 @@ function buttler_tap() {
  	brew tap "$TAP" "$URL"
 
  	if [[ ! "$URL" = "http"* ]] ; then 
- 		TAP_PATH="$(buttler_util_get_tap_path "$TAP")"
+ 		TAP_PATH="$(buttler_tap-get-path "$TAP")"
 
  		rm -rf "$TAP_PATH"
  		ln -sTLvf "$TAP_BUILD_DIR" "$TAP_PATH"
@@ -58,7 +59,7 @@ function buttler_bottle() {
 
 	mkdir -p "$TAP_BOTTLE_DIR"
 
-	(cd "$TAP_BOTTLE_DIR"; brew bottle "$FORMULA" --json --verbose --force-core-tap "--root-url=$TAP_BOTTLE_ROOT_URL")
+	(cd "$TAP_BOTTLE_DIR"; brew bottle "$FORMULA" --json --verbose "--root-url=$TAP_BOTTLE_ROOT_URL")
 }
 
 function buttler_write() {
@@ -69,6 +70,8 @@ function buttler_write() {
 }
 
 function buttler_build-formula() {
+	local FORMULA="$1"
+
 	buttler_audit "$FORMULA"
 	buttler_install "$FORMULA"
 	buttler_bottle "$FORMULA"
@@ -77,19 +80,49 @@ function buttler_build-formula() {
 
 function buttler_build-tap() {
 	buttler_tap "$TAP_NAME" "$TAP_BUILD_DIR"
+
+	buttler_tap-list-formulas "$TAP_NAME" | while read FORMULA ; do
+		buttler_build-formula "$FORMULA"
+	done
 }
 
-CMD="$1"
-CMD_FUNC="buttler_$CMD"
-
-if [[ $# -lt 1 ]] ; then
+function buttler_help() {
     echo "Usage: $0 <command> [args]" >&2
-    exit 2
-fi
+    echo -e "\nCommands: "
+    declare -F | sed -e 's/^ *declare *-f *buttler_/ /g' | sort
+}
 
-if ! (type "$CMD_FUNC" 2>&1 > /dev/null) ; then
-    echo "Unknown command $CMD!" >&2
-    exit 1
-fi
+function buttler_main() {
+	CMD_LAST_ARG="${@:$#}"
+	CMD_HELP=false
 
-shift; "$CMD_FUNC" "$@"
+	if [[ "$CMD_LAST_ARG" = "--help" || "$CMD_LAST_ARG" = "-h" ]] ; then
+		if [[ $# -gt 1 ]] ; then
+			buttler_help "$1"
+		else
+			buttler_help
+		fi
+		
+		exit 0
+	fi
+
+	CMD="$1"
+	CMD_FUNC="buttler_$CMD"
+
+	if [[ $# -lt 1 ]] ; then
+		echo "No command specified!" >&2
+		echo
+		buttler_help 
+	    exit 2
+	fi
+
+	if ! (type "$CMD_FUNC" 2>&1 > /dev/null) ; then
+	    echo "Unknown command $CMD!" >&2
+	    buttler_help
+	    exit 1
+	fi
+
+	shift; "$CMD_FUNC" "$@"
+}
+
+buttler_main $@
