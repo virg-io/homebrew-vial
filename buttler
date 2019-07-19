@@ -12,25 +12,25 @@ TAP_PATH_GH="github.com/${TAP_NAME_GH}"
 TAP_URL="https://${TAP_PATH}"
 TAP_BOTTLE_ROOT_URL="https://github.com/${TAP_GITHUB_NAME}/archive"
 
-function buttler_tap-get-path() 		{ brew tap-info "$1" --json | jq '.[0].path' -r; }
-function buttler_tap-list-formulas() 	{ brew tap-info pinkeen/vial --json | jq '.[0].formula_names | .[]' -r; }
-function buttler_formula-get-name() 	{ brew info "$1" --json | jq '.[0].name' -r; }
-function buttler_formula-get-version()  { brew info "$1" --json | jq '.[0].installed[0].version' -r ; }
+function buttler_tap_get_path() 		{ brew tap-info "$1" --json | jq '.[0].path' -r; }
+function buttler_tap_list_formulas() 	{ brew tap-info pinkeen/vial --json | jq '.[0].formula_names | .[]' -r; }
+function buttler_formula_get_name() 	{ brew info "$1" --json | jq '.[0].name' -r; }
+function buttler_formula_get_version()  { brew info "$1" --json | jq '.[0].installed[0].version' -r ; }
 
-function buttler_tap() {
+function buttler_cmd_tap() {
 	local TAP="$1" URL="$2"
 
  	brew tap "$TAP" "$URL"
 
  	if [[ ! "$URL" = "http"* ]] ; then 
- 		TAP_PATH="$(buttler_tap-get-path "$TAP")"
+ 		TAP_PATH="$(buttler_tap_get_path "$TAP")"
 
  		rm -rf "$TAP_PATH"
  		ln -sTLvf "$TAP_BUILD_DIR" "$TAP_PATH"
 	fi
 }
 
-function buttler_info() {
+function buttler_cmd_info() {
 	echo -e "--- Homebrew Config --- \n"
 	brew config
 	echo -e "\n--- Installed Homebrew Packages --- \n"
@@ -40,11 +40,15 @@ function buttler_info() {
 	echo -e "\n\n"
 }
 
-function buttler_audit() {
+function buttler_cmd_audit() {
 	brew audit --verbose --strict "$FORMULA"
 }
 
-function buttler_install() {
+function buttler_cmd_test() {
+	brew test --verbose "$FORMULA"
+}
+
+function buttler_cmd_install() {
 	local FORMULA="$1"
 
 	if brew list "$FORMULA" ; then
@@ -54,7 +58,7 @@ function buttler_install() {
 	brew install "$FORMULA" --verbose --build-bottle --force
 }
 
-function buttler_bottle() {
+function buttler_cmd_bottle() {
 	local FORMULA="$1"
 
 	mkdir -p "$TAP_BOTTLE_DIR"
@@ -62,67 +66,70 @@ function buttler_bottle() {
 	(cd "$TAP_BOTTLE_DIR"; brew bottle "$FORMULA" --json --verbose "--root-url=$TAP_BOTTLE_ROOT_URL")
 }
 
-function buttler_write() {
-	local FORMULA="$1"
-
-	set -e -x
-	ls -1f "$TAP_BOTTLE_DIR"*".json" | xargs brew bottle --write --no-commit --merge
+function buttler_cmd_bottle-write-all() {
+	ls -1f "$TAP_BOTTLE_DIR/"*".json" | xargs brew bottle --write --no-commit --merge
 }
 
-function buttler_build-formula() {
+function buttler_cmd_build-formula() {
 	local FORMULA="$1"
 
-	buttler_audit "$FORMULA"
-	buttler_install "$FORMULA"
-	buttler_bottle "$FORMULA"
-	buttler_write "$FORMULA"
+	buttler_cmd_audit "$FORMULA"
+	buttler_cmd_install "$FORMULA"
+	buttler_cmd_test "$FORMULA"
+	buttler_cmd_bottle "$FORMULA"
 }
 
-function buttler_build-tap() {
-	buttler_tap "$TAP_NAME" "$TAP_BUILD_DIR"
+function buttler_cmd_build-tap() {
+	rm -rf "$TAP_BOTTLE_DIR/"*
+	
+	buttler_cmd_tap "$TAP_NAME" "$TAP_BUILD_DIR"
 
-	buttler_tap-list-formulas "$TAP_NAME" | while read FORMULA ; do
-		buttler_build-formula "$FORMULA"
+	buttler_tap_list_formulas "$TAP_NAME" | while read FORMULA ; do
+		buttler_cmd_build-formula "$FORMULA"
 	done
+
+	buttler_cmd_bottle-write-all
 }
 
-function buttler_help() {
+function buttler_cmd_help() {
     echo "Usage: $0 <command> [args]" >&2
     echo -e "\nCommands: "
-    declare -F | sed -e 's/^ *declare *-f *buttler_/ /g' | sort
+    declare -F | grep -e " $CMD_PREFIX" | sed -e "s/^ *declare *-f *$CMD_PREFIX/ /g" | sort
 }
 
-function buttler_main() {
+CMD_PREFIX="buttler_cmd_"
+
+function buttler_cmd_main() {
 	CMD_LAST_ARG="${@:$#}"
 	CMD_HELP=false
 
 	if [[ "$CMD_LAST_ARG" = "--help" || "$CMD_LAST_ARG" = "-h" ]] ; then
 		if [[ $# -gt 1 ]] ; then
-			buttler_help "$1"
+			buttler_cmd_help "$1"
 		else
-			buttler_help
+			buttler_cmd_help
 		fi
 		
 		exit 0
 	fi
 
 	CMD="$1"
-	CMD_FUNC="buttler_$CMD"
+	CMD_FUNC="$CMD_PREFIX$CMD"
 
 	if [[ $# -lt 1 ]] ; then
 		echo "No command specified!" >&2
 		echo
-		buttler_help 
+		buttler_cmd_help 
 	    exit 2
 	fi
 
 	if ! (type "$CMD_FUNC" 2>&1 > /dev/null) ; then
 	    echo "Unknown command $CMD!" >&2
-	    buttler_help
+	    buttler_cmd_help
 	    exit 1
 	fi
 
 	shift; "$CMD_FUNC" "$@"
 }
 
-buttler_main $@
+buttler_cmd_main $@

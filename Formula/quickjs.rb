@@ -6,8 +6,9 @@ class Quickjs < Formula
   sha256 "350c1cd9dd318ad75e15c9991121c80b85c2ef873716a8900f811554017cd564"
 
   bottle do
+    root_url "https://github.com//archive"
     rebuild 2
-    sha256 "d210275be9f4c8fcbe7adce05fc3c6ab141828cecce00bcdc8692bc8cbc2e338" => :mojave
+    sha256 "905300c199e414ac80d7c71c0395c46f2d6c84cb030a740e0ec1444f60cd13e0" => :mojave
   end
 
   patch :DATA
