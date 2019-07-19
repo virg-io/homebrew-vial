@@ -9,8 +9,8 @@ TAP_FORMULA_DIR="$TAP_BUILD_DIR/Formula"
 TAP_NAME="pinkeen/vial"
 TAP_NAME_GH="pinkeen/homebrew-vial"
 TAP_PATH_GH="github.com/${TAP_NAME_GH}"
-TAP_URL="https://${TAP_PATH}"
-TAP_BOTTLE_ROOT_URL="https://github.com/${TAP_GITHUB_NAME}/archive"
+TAP_URL="https://${TAP_PATH_GH}"
+TAP_BOTTLE_ROOT_URL="https://github.com/${TAP_NAME_GH}/archive"
 
 function buttler_tap_get_path() 		{ brew tap-info "$1" --json | jq '.[0].path' -r; }
 function buttler_tap_list_formulas() 	{ brew tap-info pinkeen/vial --json | jq '.[0].formula_names | .[]' -r; }

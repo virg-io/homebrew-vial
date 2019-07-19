@@ -8,7 +8,7 @@ class Quickjs < Formula
   bottle do
     root_url "https://github.com//archive"
     rebuild 2
-    sha256 "905300c199e414ac80d7c71c0395c46f2d6c84cb030a740e0ec1444f60cd13e0" => :mojave
+    sha256 "12f13794de215cc1a7affa8ecd3f9e3798b48e728dca60b5d3ecbdda53c7496a" => :mojave
   end
 
   patch :DATA
