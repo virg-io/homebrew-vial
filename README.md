@@ -1,4 +1,4 @@
-# *Vial* - Homebrew Tap
+# *Vial* - virg.io Homebrew Tap
 
 _Contains various useful software in the form of casks, and bottled formulas (where applicable)._
 

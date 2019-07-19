@@ -6,8 +6,8 @@ TAP_BUILD_DIR="$PWD"
 TAP_BOTTLE_DIR="$TAP_BUILD_DIR/Bottle"
 TAP_FORMULA_DIR="$TAP_BUILD_DIR/Formula"
 
-TAP_NAME="pinkeen/vial"
-TAP_NAME_GH="pinkeen/homebrew-vial"
+TAP_NAME="virg-io/vial"
+TAP_NAME_GH="virg-io/homebrew-vial"
 TAP_PATH_GH="github.com/${TAP_NAME_GH}"
 TAP_URL="https://${TAP_PATH_GH}"
 TAP_BOTTLE_ROOT_URL="https://github.com/${TAP_NAME_GH}/archive"
@@ -26,7 +26,7 @@ function buttler_cmd_tap() {
  		TAP_PATH="$(buttler_tap_get_path "$TAP")"
 
  		rm -rf "$TAP_PATH"
- 		ln -sTLvf "$TAP_BUILD_DIR" "$TAP_PATH"
+ 		/bin/ln -svf "$TAP_BUILD_DIR" "$TAP_PATH"
 	fi
 }
 
