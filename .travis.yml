@@ -11,8 +11,7 @@ addons:
       - jq
 
 stages:
-  - name: xcode-headers-setup
-    if: osx_image = xcode11
+  - xcode-headers-setup
   - build
   - deploy
   - upload
