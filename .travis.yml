@@ -17,15 +17,9 @@ stages:
   - upload
   - push
 
-jobs:
-  include:
-    - stage: xcode-headers-setup
-      script: sudo installer -pkg /Library/Developer/CommandLineTools/Packages/macOS_SDK_headers_for_macOS_10.14.pkg -target /
-    - stage: info
-      script: ./buttler info
-    - stage: build
-      script: ./buttler build-tap
-    - stage: upload
-      script: ./buttler upload
-    - stage: push
-      script: ./buttler push
+script: |
+    [[ ! -f "/Library/Developer/CommandLineTools/Packages/macOS_SDK_headers_for_macOS_10.14.pkg" ] || sudo installer -pkg /Library/Developer/CommandLineTools/Packages/macOS_SDK_headers_for_macOS_10.14.pkg -target /
+    ./buttler info
+    ./buttler build-tap
+    ./buttler upload
+    ./buttler push

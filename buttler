@@ -136,7 +136,7 @@ function buttler_cmd_push() {
 		return
 	fi
 
-	git commit -m "[Buttler CI Script] Update bottle definitions"
+	git commit -m "[Buttler CI Script] Update bottle definitions [ci skip]"
 	git push
 }
 
