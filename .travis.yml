@@ -10,12 +10,5 @@ addons:
       - findutils
       - jq
 
-stages:
-  - xcode-headers-setup
-  - build
-  - deploy
-  - upload
-  - push
-
 script: ./.travis-build.sh
 
