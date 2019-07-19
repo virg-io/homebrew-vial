@@ -17,5 +17,5 @@ stages:
   - upload
   - push
 
-script: ./travis-build.sh
+script: ./.travis-build.sh
 
