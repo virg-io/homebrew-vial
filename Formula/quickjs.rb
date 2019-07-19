@@ -6,10 +6,9 @@ class Quickjs < Formula
   sha256 "350c1cd9dd318ad75e15c9991121c80b85c2ef873716a8900f811554017cd564"
 
   bottle do
-    root_url "https://github.com/pinkeen/homebrew-vial/archive"
-    cellar :any_skip_relocation
-    rebuild 3
-    sha256 "3af758daf1c57097f7d52e00479ee5177a72fb70d4294993c8e734014c158a7a" => :mojave
+    root_url "https://github.com/virg-io/homebrew-vial/releases/download/bottles"
+    rebuild 4
+    sha256 "b589855fa36b67baf5f616a7782f70934638745bd653ba9946d05daaa5f44ee8" => :mojave
   end
 
   patch :DATA

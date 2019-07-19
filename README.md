@@ -1,6 +1,21 @@
-# *Vial* - virg.io Homebrew Tap
+# *vial* - [Homebrew](brew.sh) Tap from __virg.io__
 
 _Contains various useful software in the form of casks, and bottled formulas (where applicable)._
+
+## Usage
+
+**Tap the whole repo (once) and install selected package:**
+
+```sh
+brew tap virg-io/vial
+brew install package-name
+```
+
+**...or install directly without tapping:**
+
+```sh
+brew install virg-io/vial/package-name
+```
 
 ## Casks
 

@@ -10,7 +10,17 @@ addons:
       - findutils
       - jq
 
-script: ./buttler build-tap
+stages:
+  - build
+  - deploy
 
-deploy:
-  skip_cleanup: true
+jobs:
+  include:
+    - stage: info
+      script: ./buttler info
+    - stage: build
+      script: ./buttler build-tap
+    - stage: upload
+      script: ./buttler upload
+    - stage: push
+      script: ./buttler push

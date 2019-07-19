@@ -10,12 +10,19 @@ TAP_NAME="virg-io/vial"
 TAP_NAME_GH="virg-io/homebrew-vial"
 TAP_PATH_GH="github.com/${TAP_NAME_GH}"
 TAP_URL="https://${TAP_PATH_GH}"
-TAP_BOTTLE_ROOT_URL="https://github.com/${TAP_NAME_GH}/archive"
 
-function buttler_tap_get_path() 		{ brew tap-info "$1" --json | jq '.[0].path' -r; }
-function buttler_tap_list_formulas() 	{ brew tap-info pinkeen/vial --json | jq '.[0].formula_names | .[]' -r; }
-function buttler_formula_get_name() 	{ brew info "$1" --json | jq '.[0].name' -r; }
-function buttler_formula_get_version()  { brew info "$1" --json | jq '.[0].installed[0].version' -r ; }
+TAP_GH_RELEASE_NAME="bottles"
+TAP_GH_RELEASE_MSG="Homebrew Bottle Binaries"
+TAP_BOTTLE_ROOT_URL="https://github.com/${TAP_NAME_GH}/releases/download/${TAP_GH_RELEASE_NAME}"
+
+function buttler_tap_get_path() 						{ brew tap-info "$1" --json | jq '.[0].path' -r; }
+function buttler_tap_list_formulas() 					{ brew tap-info "$TAP_NAME" --json | jq '.[0].formula_names | .[]' -r; }
+function buttler_formula_get_name() 					{ brew info "$1" --json | jq '.[0].name' -r; }
+function buttler_formula_get_version()  				{ brew info "$1" --json | jq '.[0].installed[0].version' -r ; }
+function buttler_bottle_get_tags() 						{ cat "$1" | jq '.[keys[0]] | .bottle.tags | to_entries[] | .key' -r ; }
+function buttler_bottle_get_tag() 						{ cat "$1" | jq '.[keys[0]] | .bottle.tags["'"$2"'"]' -r ; }
+function buttler_bottle_get_tag_dst_filename() 			{ buttler_bottle_get_tag "$1" "$2" | jq '.filename' -r ; }
+function buttler_bottle_get_tag_src_filename() 			{ buttler_bottle_get_tag "$1" "$2" | jq '.local_filename' -r ; }
 
 function buttler_cmd_tap() {
 	local TAP="$1" URL="$2"
@@ -95,6 +102,42 @@ function buttler_cmd_help() {
     echo "Usage: $0 <command> [args]" >&2
     echo -e "\nCommands: "
     declare -F | grep -e " $CMD_PREFIX" | sed -e "s/^ *declare *-f *$CMD_PREFIX/ /g" | sort
+}
+
+function buttler_cmd_upload() {
+	if ! hub release show "$TAP_GH_RELEASE_NAME" ; then
+		echo "Creating GitHub release: '$TAP_GH_RELEASE_NAME'"
+		hub release create -m "$TAP_GH_RELEASE_MSG" -t "master" "$TAP_GH_RELEASE_NAME"  
+	fi
+
+	(
+		cd "$TAP_BOTTLE_DIR"
+		ls *.bottle.json | while read JSON_FILE ; do
+			buttler_bottle_get_tags "$JSON_FILE" | while read BOTTLE_TAG ; do
+				local SRC="$(buttler_bottle_get_tag_src_filename "$JSON_FILE" "$BOTTLE_TAG")"
+				local DST="$(buttler_bottle_get_tag_dst_filename "$JSON_FILE" "$BOTTLE_TAG")"
+
+				if [[ ! -f "$SRC" ]] ; then
+					echo "Skipping not found bottle file: $SRC"
+					continue
+				fi
+
+				echo "Uploading: $JSON_FILE:$BOTTLE_TAG | $SRC -> $DST"
+
+				hub release edit -m "$TAP_GH_RELEASE_MSG" -a "$SRC#$DST" "$TAP_GH_RELEASE_NAME" 
+			done
+		done
+	)
+}
+
+function buttler_cmd_push() {
+	if ! git add . -A  2>&1 > /dev/null ; then
+		echo "No changes to push"
+		return
+	fi
+
+	git commit -m "[Buttler CI Script] Update bottle definitions"
+	git push
 }
 
 CMD_PREFIX="buttler_cmd_"
