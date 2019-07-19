@@ -9,6 +9,7 @@ addons:
       - coreutils
       - findutils
       - jq
+      - hub
 
 script: ./.travis-build.sh
 

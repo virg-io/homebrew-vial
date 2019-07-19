@@ -10,10 +10,13 @@ TAP_NAME="virg-io/vial"
 TAP_NAME_GH="virg-io/homebrew-vial"
 TAP_PATH_GH="github.com/${TAP_NAME_GH}"
 TAP_URL="https://${TAP_PATH_GH}"
+TAP_GIT_URL="https://${TAP_PATH_GH}.git"
 
 TAP_GH_RELEASE_NAME="bottles"
 TAP_GH_RELEASE_MSG="Homebrew Bottle Binaries"
 TAP_BOTTLE_ROOT_URL="https://github.com/${TAP_NAME_GH}/releases/download/${TAP_GH_RELEASE_NAME}"
+
+BRANCH="${BRANCH:-master}"
 
 function buttler_tap_get_path() 						{ brew tap-info "$1" --json | jq '.[0].path' -r; }
 function buttler_tap_list_formulas() 					{ brew tap-info "$TAP_NAME" --json | jq '.[0].formula_names | .[]' -r; }
@@ -137,7 +140,8 @@ function buttler_cmd_push() {
 	fi
 
 	git commit -m "[Buttler CI Script] Update bottle definitions [ci skip]"
-	git push
+	git remote add origin git@github.com:virg-io/homebrew-vial.git
+	git push origin HEAD:"$BRANCH"
 }
 
 CMD_PREFIX="buttler_cmd_"

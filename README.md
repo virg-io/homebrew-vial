@@ -1,4 +1,6 @@
-# *vial* - [Homebrew](brew.sh) Tap from __virg.io__
+[![Build Status](https://travis-ci.org/virg-io/homebrew-vial.svg?branch=master)](https://travis-ci.org/virg-io/homebrew-vial)
+
+# *vial* - [Homebrew](brew.sh) Tap
 
 _Contains various useful software in the form of casks, and bottled formulas (where applicable)._
 
