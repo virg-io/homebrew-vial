@@ -11,11 +11,17 @@ addons:
       - jq
 
 stages:
+  - name: xcode-headers-setup
+    if: osx_image = xcode11
   - build
   - deploy
+  - upload
+  - push
 
 jobs:
   include:
+    - stage: xcode-headers-setup
+      script: sudo installer -pkg /Library/Developer/CommandLineTools/Packages/macOS_SDK_headers_for_macOS_10.14.pkg -target /
     - stage: info
       script: ./buttler info
     - stage: build
