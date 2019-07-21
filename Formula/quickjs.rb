@@ -7,7 +7,8 @@ class Quickjs < Formula
 
   bottle do
     root_url "https://github.com/virg-io/homebrew-vial/releases/download/bottles"
-    sha256 "2ccc3e5edac5d6e771ea77fada77ceab3fdf0d6f2de0975d530d322f12633f32" => :mojave
+    rebuild 1
+    sha256 "6cd1c295d4f3e7006b1be7b7843926a01849bcec2dd6d56b767759c8a565ea64" => :mojave
   end
 
   patch :DATA
