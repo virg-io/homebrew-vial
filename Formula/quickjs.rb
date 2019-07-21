@@ -2,12 +2,11 @@ class Quickjs < Formula
   desc "Small And Fast Javascript Engine"
   homepage "https://bellard.org/quickjs/"
 
-  url "https://bellard.org/quickjs/quickjs-2019-07-09.tar.xz"
-  sha256 "350c1cd9dd318ad75e15c9991121c80b85c2ef873716a8900f811554017cd564"
+  url "https://bellard.org/quickjs/quickjs-2019-07-21.tar.xz"
+  sha256 "a906bed24c57dc9501b84a5bb4514f7eac58db82b721116ec5abe868490e53cc"
 
   bottle do
     root_url "https://github.com/virg-io/homebrew-vial/releases/download/bottles"
-    rebuild 5
     sha256 "2ccc3e5edac5d6e771ea77fada77ceab3fdf0d6f2de0975d530d322f12633f32" => :mojave
   end
 
@@ -17,7 +16,7 @@ class Quickjs < Formula
     system "make", "clean"
     system "make", "prefix=#{prefix}", "CONFIG_M32="
     # Tests are dependent on having a TTY, so fake it with `script`
-    system "script", "--", "/dev/null", "make", "test", "prefix=#{prefix}", "CONFIG_M32="
+    system "script", "-q", "/dev/stdout", "make", "test", "prefix=#{prefix}", "CONFIG_M32="
     system "make", "install", "prefix=#{prefix}", "CONFIG_M32="
 
     mkdir_p pkgshare
@@ -26,7 +25,14 @@ class Quickjs < Formula
   end
 
   test do
-    assert_match /^QJS42/, shell_output("#{bin}/qjs --eval 'const js=\"JS\"; console.log(`Q${js}${(7 + 35)}`);'")
+    output = shell_output("#{bin}/qjs --eval 'const js=\"JS\"; console.log(`Q${js}${(7 + 35)}`);'").strip
+    assert_match /^QJS42/, output
+
+    path = testpath/"test.js"
+    path.write "console.log('hello');"
+    system "#{bin}/qjsc", path
+    output = shell_output(testpath/"a.out").strip
+    assert_equal "hello", output
   end
 end
 

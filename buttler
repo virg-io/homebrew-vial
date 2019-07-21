@@ -78,6 +78,7 @@ function buttler_cmd_bottle() {
 }
 
 function buttler_cmd_bottle-write-all() {
+	git pull origin "HEAD:$GIT_BRANCH"
 	ls -1f "$TAP_BOTTLE_DIR/"*".json" | xargs brew bottle --write --no-commit --merge
 }
 

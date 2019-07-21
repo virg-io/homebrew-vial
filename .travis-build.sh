@@ -3,7 +3,7 @@
 [[ ! -f "/Library/Developer/CommandLineTools/Packages/macOS_SDK_headers_for_macOS_10.14.pkg" ]] || sudo installer -pkg /Library/Developer/CommandLineTools/Packages/macOS_SDK_headers_for_macOS_10.14.pkg -target /
 
 git config --global user.name "Buttler@TravisCI"
-git config --global user.email buttler@travis-ci.org
+git config --global user.email "buttler@travis-ci.org"
 
 GIT_ORIGIN_URI_OLD="$(git remote get-url origin)"
 GIT_ORIGIN_URI_NEW="$(echo "$GIT_ORIGIN_URI_OLD" | sed -E 's~https://github.com/|(ssh\://)?git@github.com\:~https://'"$GITHUB_USERNAME:$GITHUB_TOKEN"'@github.com/~g')"
